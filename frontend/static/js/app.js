@@ -2,7 +2,8 @@
 // TaskFlow SPA — app.js
 // ============================================================
 
-const API = '';
+// Keep this EMPTY for production on Render
+const API = ''; 
 let token = localStorage.getItem('tf_token');
 let currentUser = null;
 let currentPage = 'dashboard';
@@ -17,17 +18,30 @@ let taskModalProjectId = null;
 async function apiFetch(path, opts = {}) {
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
+  
   const res = await fetch(API + path, { ...opts, headers });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Request failed');
-  return data;
+  
+  // Handle the "Unexpected token <" error by checking content type
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.indexOf("application/json") !== -1) {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Request failed');
+    return data;
+  } else {
+    // If we got HTML back, it's likely a 404 or Server Error
+    const text = await res.text();
+    console.error("Server returned non-JSON response:", text);
+    throw new Error('Server error: Received HTML instead of JSON. Check your API routes.');
+  }
 }
 
 function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ'}</span><span>${msg}</span>`;
-  document.getElementById('toast-container').appendChild(el);
+  container.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
 
@@ -62,6 +76,7 @@ function showLogin() {
   document.getElementById('login-form').classList.remove('hidden');
   document.getElementById('signup-form').classList.add('hidden');
 }
+
 function showSignup() {
   document.getElementById('signup-form').classList.remove('hidden');
   document.getElementById('login-form').classList.add('hidden');
@@ -89,9 +104,19 @@ async function handleSignup() {
   const email = document.getElementById('signup-email').value.trim();
   const password = document.getElementById('signup-password').value;
   const err = document.getElementById('signup-error');
+  
+  if (!name || !email || !password) {
+      err.textContent = "All fields are required";
+      err.classList.remove('hidden');
+      return;
+  }
+
   err.classList.add('hidden');
   try {
-    const data = await apiFetch('/api/auth/signup', { method: 'POST', body: JSON.stringify({ name, email, password }) });
+    const data = await apiFetch('/api/auth/signup', { 
+        method: 'POST', 
+        body: JSON.stringify({ name, email, password }) 
+    });
     token = data.token;
     localStorage.setItem('tf_token', token);
     currentUser = data.user;
@@ -170,7 +195,6 @@ async function loadDashboard() {
     document.getElementById('stat-overdue').textContent = s.overdue;
     document.getElementById('stat-projects').textContent = s.projects;
 
-    // Recent tasks
     const rt = document.getElementById('dash-recent-tasks');
     if (!data.recent_tasks.length) {
       rt.innerHTML = `<div class="empty-state"><p>No tasks yet. Create your first!</p></div>`;
@@ -187,7 +211,6 @@ async function loadDashboard() {
       `).join('');
     }
 
-    // Tasks per user
     const tpu = document.getElementById('dash-tasks-per-user');
     if (!data.tasks_per_user.length) {
       tpu.innerHTML = `<div class="empty-state"><p>No assigned tasks yet</p></div>`;
@@ -209,10 +232,9 @@ async function loadDashboard() {
       `).join('');
     }
 
-    // Overdue
     const ot = document.getElementById('dash-overdue-tasks');
     if (!data.overdue_tasks.length) {
-      ot.innerHTML = `<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><p>No overdue tasks! Great job 🎉</p></div>`;
+      ot.innerHTML = `<div class="empty-state"><p>No overdue tasks! Great job 🎉</p></div>`;
     } else {
       ot.innerHTML = data.overdue_tasks.map(t => `
         <div class="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/10 cursor-pointer hover:border-red-500/20 transition-colors" onclick="openTaskDetail(${t.id})">
@@ -247,7 +269,7 @@ async function loadTasks() {
   }
 }
 
-function renderKanban(tasks, todoId, inpId, doneId, cTodo, cInp, cDone, isAdmin = true) {
+function renderKanban(tasks, todoId, inpId, doneId, cTodo, cInp, cDone) {
   const todo = tasks.filter(t => t.status === 'todo');
   const inprogress = tasks.filter(t => t.status === 'in_progress');
   const done = tasks.filter(t => t.status === 'done');
@@ -263,7 +285,7 @@ function renderKanban(tasks, todoId, inpId, doneId, cTodo, cInp, cDone, isAdmin 
       return;
     }
     el.innerHTML = list.map(t => `
-      <div class="task-card ${t.is_overdue ? 'overdue' : ''}" onclick="openTaskDetail(${t.id})">
+      <div class="task-card ${isOverdue(t.due_date) && t.status !== 'done' ? 'overdue' : ''}" onclick="openTaskDetail(${t.id})">
         <div class="flex items-start justify-between mb-2">
           <span class="text-sm font-medium leading-snug flex-1 mr-2">${t.title}</span>
           ${priorityBadge(t.priority)}
@@ -275,7 +297,7 @@ function renderKanban(tasks, todoId, inpId, doneId, cTodo, cInp, cDone, isAdmin 
             <span class="text-xs text-slate-500 truncate max-w-24">${t.project_name}</span>
           </div>
           <div class="flex items-center gap-2">
-            ${t.is_overdue ? `<span class="overdue-badge">Overdue</span>` : t.due_date ? `<span class="text-xs text-slate-500">${formatDate(t.due_date)}</span>` : ''}
+            ${isOverdue(t.due_date) && t.status !== 'done' ? `<span class="overdue-badge">Overdue</span>` : t.due_date ? `<span class="text-xs text-slate-500">${formatDate(t.due_date)}</span>` : ''}
             ${t.assignee_name ? `<div class="avatar w-6 h-6 text-xs" style="background:${t.assignee_color}">${initials(t.assignee_name)}</div>` : ''}
           </div>
         </div>
@@ -416,7 +438,6 @@ async function loadProjectMembers() {
       `).join('');
     }
 
-    // Also populate task assignee dropdown
     const sel = document.getElementById('task-assignee');
     if (sel) {
       sel.innerHTML = '<option value="">Unassigned</option>' + data.members.map(m =>
@@ -551,7 +572,7 @@ async function openTaskModal(preProjectId) {
   }
 }
 
-async function loadProjectMembers() {
+async function handleTaskProjectChange() {
   const id = document.getElementById('task-project')?.value;
   if (id) await loadMembersForSelect(parseInt(id));
 }
@@ -644,10 +665,6 @@ function closeModalOverlay(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
-
-// Enter key on login/signup
-document.getElementById('login-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
-document.getElementById('signup-password')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleSignup(); });
 
 // ── Init ──────────────────────────────────────────────────────
 
