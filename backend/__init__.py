@@ -25,13 +25,18 @@ def create_app():
     db_url = os.environ.get('DATABASE_URL')
     
     if db_url:
-        # Aiven provides mysql://, but SQLAlchemy needs mysql+pymysql://
+        # 1. Fix the driver prefix
         if db_url.startswith("mysql://"):
             db_url = db_url.replace("mysql://", "mysql+pymysql://", 1)
         
+        # 2. STRIP the 'ssl-mode' query parameter (Crucial Fix)
+        # PyMySQL throws a TypeError if 'ssl-mode' is in the connection string
+        if "?" in db_url:
+            db_url = db_url.split("?")[0]
+        
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url
         
-        # Aiven specific SSL requirement for production
+        # 3. Handle SSL manually for PyMySQL/Aiven compatibility
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
             "connect_args": {
                 "ssl": {
@@ -57,7 +62,7 @@ def create_app():
     jwt.init_app(app)
     bcrypt.init_app(app)
     
-    # CORS: Allow all origins for the assignment to avoid frontend blockages
+    # CORS setup
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
     # Register Blueprints
@@ -75,6 +80,10 @@ def create_app():
 
     # Automatically create tables in the database
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+            print("Database tables verified/created successfully.")
+        except Exception as e:
+            print(f"Database table creation error: {e}")
 
     return app
