@@ -79,25 +79,34 @@ Inspired by tools like Trello and Asana, TaskFlow focuses on simplicity, perform
 ## 🏗️ Project Structure
 taskflow/
 │
-├── app.py
+├── app.py # Entry point — runs the Flask app
+│
 ├── backend/
-│ ├── models.py
+│ ├── init.py # App factory & configuration
+│ ├── models.py # Database models (User, Project, Task, etc.)
+│ │
 │ └── routes/
-│ ├── auth.py
-│ ├── projects.py
-│ ├── tasks.py
-│ └── dashboard.py
+│ ├── auth.py # Authentication APIs (login/signup)
+│ ├── projects.py # Project management APIs
+│ ├── tasks.py # Task CRUD operations
+│ ├── dashboard.py # Dashboard analytics APIs
+│ └── frontend.py # Serves SPA frontend
 │
 ├── frontend/
-│ ├── templates/index.html
+│ ├── templates/
+│ │ └── index.html # Main HTML file (SPA root)
+│ │
 │ └── static/
-│ ├── css/main.css
-│ └── js/app.js
+│ ├── css/
+│ │ └── main.css # Styling (dark theme)
+│ │
+│ └── js/
+│ └── app.js # Frontend logic (routing, API calls)
 │
-├── requirements.txt
-├── Procfile
-└── .env.example
-
+├── requirements.txt # Python dependencies
+├── Procfile # Deployment config (Gunicorn)
+├── railway.toml # Deployment settings
+└── .env.example # Environment variables template
 
 ---
 
