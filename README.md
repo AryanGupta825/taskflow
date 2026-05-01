@@ -1,140 +1,128 @@
-🚀 TaskFlow — Team Task Manager
+# 🚀 TaskFlow — Team Task Manager
+
 A full-stack team task management web application that helps teams collaborate efficiently by managing projects, assigning tasks, and tracking progress in real-time.
 
-🔗 Live Demo: http://taskflow-kco6.onrender.com
-📂 GitHub Repo: https://github.com/AryanGupta825/taskflow
+🔗 **Live Demo:** http://taskflow-kco6.onrender.com  
+📂 **GitHub Repo:** https://github.com/AryanGupta825/taskflow  
 
-📌 About the Project
+---
+
+## 📌 About the Project
+
 TaskFlow is designed to simplify team collaboration by replacing scattered communication (chats/spreadsheets) with a centralized workspace.
 
 It provides:
-
-Role-based access control (Admin & Members)
-
-Task assignment & tracking system
-
-Visual Kanban board
-
-Real-time project insights dashboard
+- Role-based access control (Admin & Members)
+- Task assignment & tracking system
+- Visual Kanban board
+- Real-time project insights dashboard
 
 Inspired by tools like Trello and Asana, TaskFlow focuses on simplicity, performance, and clean UI.
 
-⚙️ Tech Stack
-🔹 Backend
-Flask
+---
 
-SQLAlchemy
+## ⚙️ Tech Stack
 
-Flask-JWT-Extended
+### 🔹 Backend
+- Flask
+- SQLAlchemy
+- Flask-JWT-Extended
+- bcrypt
 
-bcrypt
+### 🔹 Frontend
+- HTML, CSS, JavaScript (Vanilla)
+- Tailwind CSS
 
-🔹 Frontend
-HTML, CSS, JavaScript (Vanilla)
+### 🔹 Database
+- MySQL
 
-Tailwind CSS
+### 🔹 Deployment
+- Render
+- GitHub
 
-🔹 Database
-MySQL
+---
 
-🔹 Deployment
-Render
+## ✨ Features
 
-GitHub
+### 🔐 Authentication
+- Secure JWT-based login & signup
+- Password hashing using bcrypt
 
-✨ Features
-🔐 Authentication
-Secure JWT-based login & signup
+### 📁 Project Management
+- Create & manage projects
+- Admin automatically assigned to creator
+- Invite members via email
 
-Password hashing using bcrypt
+### ✅ Task Management
+- Assign tasks with:
+  - Priority levels
+  - Due dates
+  - Status tracking
+- Members only see their assigned tasks
 
-📁 Project Management
-Create & manage projects
+### 📊 Dashboard
+- Task completion rate
+- Overdue tasks tracking
+- Per-member workload insights
 
-Admin automatically assigned to creator
+### 📌 Kanban Board
+- To Do → In Progress → Done
+- Visual workflow tracking
 
-Invite members via email
+### 🔒 Security
+- Role-based access control enforced at API level
+- Input validation on all endpoints
+- CORS protection
 
-✅ Task Management
-Assign tasks with:
+---
 
-Priority levels
-
-Due dates
-
-Status tracking
-
-Members only see their assigned tasks
-
-📊 Dashboard
-Task completion rate
-
-Overdue tasks tracking
-
-Per-member workload insights
-
-📌 Kanban Board
-To Do → In Progress → Done
-
-Drag-and-track workflow visualization
-
-🔒 Security
-Role-based access control enforced at API level
-
-Input validation on all endpoints
-
-CORS protection
-
-🏗️ Project Structure
+## 🏗️ Project Structure
 taskflow/
 │
 ├── app.py
 ├── backend/
-│   ├── models.py
-│   └── routes/
-│       ├── auth.py
-│       ├── projects.py
-│       ├── tasks.py
-│       └── dashboard.py
+│ ├── models.py
+│ └── routes/
+│ ├── auth.py
+│ ├── projects.py
+│ ├── tasks.py
+│ └── dashboard.py
 │
 ├── frontend/
-│   ├── templates/index.html
-│   └── static/
-│       ├── css/main.css
-│       └── js/app.js
+│ ├── templates/index.html
+│ └── static/
+│ ├── css/main.css
+│ └── js/app.js
 │
 ├── requirements.txt
 ├── Procfile
 └── .env.example
-🧠 Skills Demonstrated
-💻 Backend Development
-REST API design with Flask Blueprints
 
-JWT Authentication & Authorization
 
-Secure password storage (bcrypt)
+---
 
-Role-based access control
+## 🧠 Skills Demonstrated
 
-🎨 Frontend Development
-Single Page Application (SPA)
+### 💻 Backend Development
+- REST API design with Flask Blueprints  
+- JWT Authentication & Authorization  
+- Secure password storage (bcrypt)  
+- Role-based access control  
 
-Client-side routing
+### 🎨 Frontend Development
+- Single Page Application (SPA)  
+- Client-side routing  
+- Dynamic DOM rendering  
+- Token-based API communication  
 
-Dynamic DOM rendering
+### 🗄️ Database Design
+- Normalized schema  
+- Many-to-many relationships  
+- Foreign keys & cascading deletes  
 
-Token-based API communication
+### ☁️ Deployment
+- Production deployment on Render  
+- Gunicorn WSGI server setup  
+- Environment variable management  
 
-🗄️ Database Design
-Normalized schema
-
-Many-to-many relationships (ProjectMembers)
-
-Foreign keys & cascading deletes
-
-☁️ Deployment
-Production deployment on Render
-
-Gunicorn WSGI server setup
-
-Environment variable management
+---
